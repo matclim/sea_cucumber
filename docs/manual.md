@@ -13,9 +13,6 @@ control.
 This manual covers everything: building, the command-line tools, the view
 configuration, and the web interface.
 
-Contact: Matei Climescu, matclim@cern.ch
-rev 0.1, 10.09.2026
-
 ---
 
 ## 1. Concepts and architecture
@@ -113,6 +110,30 @@ The view config drives the REve display and seeds the web producer. Globals:
 - `scan_depth` / `region_depth` — how deep the name-scan and region walks go.
 - `region_exclude` — volume patterns dropped from region walks.
 
+### `[ui]` — web interface defaults
+
+Web-only settings, all optional (the client also lets you change them live):
+
+- `color_scheme` — the default colour scheme name (see §5). e.g. `"ship_original"`.
+- `font_scale` — global text-size multiplier (default `1.0`).
+- `sidebar_width` — menu width in CSS pixels.
+- `[ui.fonts]` — a sub-table of per-category base sizes (px): `window_title`,
+  `menu`, `heading`, `dialog`, `brand`.
+
+```toml
+[ui]
+color_scheme = "ship_original"
+font_scale = 1.0
+sidebar_width = 232
+
+[ui.fonts]
+window_title = 13
+menu = 13
+heading = 13
+dialog = 13
+brand = 15
+```
+
 ### `[geometry]`
 
 `db_file`, `include`, `exclude` (regex or glob), `max_depth`, `stop_at_match`,
@@ -144,6 +165,11 @@ the camera:
   frames it (Eve7 auto-fits about the origin).
 - `hit_marker_size`, `draw_decay`, `decay_clip`, `decay_marker_size` — per-view
   event styling.
+- `panel_x`, `panel_y`, `panel_w`, `panel_h` — the region's panel position and
+  size in the **web** view, as **viewport percentages** (0–100), so a layout is
+  resolution-independent. Omit to let the client cascade the panel. This makes
+  the TOML the single source of the web layout: edit these to arrange the
+  panels.
 
 Camera and window are independent: a side view is normally a z slab, a front
 view an x or y slab. A mismatch is a warning, not an error — whatever windows
@@ -153,8 +179,10 @@ you supplied are used, z preferred.
 
 ## 5. The web frontend
 
-Layout: a control **sidebar** (left), the **main** 3D view (centre), and any
-number of **floating views** you create.
+Layout: a control **sidebar** (left), the **main** 3D view (centre), and the
+**region views** — floating panels defined by the `[[region]]` blocks in the
+view TOML (placed via their `panel_x/y/w/h`, in viewport %), plus any you create
+interactively.
 
 ### Sidebar controls
 
@@ -188,21 +216,67 @@ Clicking the main view deselects.
 - **Set boundary colours…** — a colour picker with a hex field; applied live,
   persists across lock/unlock, with **Restore default**.
 
-### Saving your setup
+### Layout persistence
 
-- **Save setup** downloads `sea_cucumber_setup.json`: every view's name,
-  position, size, region window, camera, display options, lock state, and border
-  colour (but never the event — a setup is layout only).
-- **Load setup** reads such a file back and rebuilds the arrangement.
-- On start-up the frontend auto-loads `configs/sea_cucumber_default_setup.json`
-  if present; edit that file to change the default layout.
+The default layout is the `[[region]]` blocks in the view TOML — their windows,
+cameras, and `panel_x/y/w/h` (viewport %). Loaded from the manifest on start,
+this is the authoritative, version-controlled layout; edit the TOML and
+regenerate (`pixi run web-data`) to change it. There is no browser localStorage.
 
-### Colours
+For capturing or sharing an interactive arrangement:
 
-Dark-earth background, blue-dominant detector geometry (with cream and muted
-purple mixed in), darker-pink hits, lighter-pink decay vertex, cream text.
-Detector colour comes from the producer; hit/vertex colours are set in
-`web/js/main.js`.
+- **Save setup** writes the current arrangement (names, positions, sizes,
+  windows, cameras, options, lock state, colours — never the event). Served by
+  the writable dev server it saves to the default config; on a read-only server
+  it downloads `sea_cucumber_setup.json` instead.
+- **Load setup** reads such a JSON back and rebuilds those views.
+
+### Colour schemes
+
+A **Colour scheme** selector sits at the bottom of the sidebar; switching it
+re-themes everything live — background, text, accents, borders, the 3D clear
+colour, the hit/vertex markers, and the detector palette. Schemes are defined in
+`web/js/schemes.js`; the default is set by `[ui] color_scheme`.
+
+Built-in schemes: `ship_original` (the classic look — brown background, the
+producer's baked detector colours, pink hits), `ship_db` (dark-blue background,
+lighter-blue/gold detectors), `ship_ht` (pinks throughout, bright-pink hits),
+and the terminal-style `cobalt2`, `apprentice`, `ayu_dark`, `dracula`, `noctis`,
+`shades_of_purple`. In every scheme except `ship_original`, the detector is
+coloured **per subsystem** (one colour per subsystem, from that scheme's
+palette); `ship_original` uses the producer's baked colours as-is.
+
+### Fonts and text styling
+
+Text is grouped into categories (`window_title`, `menu`, `heading`, `dialog`,
+`brand`), each driven by a size variable with defaults from `[ui.fonts]`.
+
+- **Right-click any label** (including menu buttons) → a **Text style** dialog:
+  set the size and colour of *that element*, or of its *whole category* in one
+  click.
+- `+` / `-` scale all text; the global factor also comes from `[ui] font_scale`.
+- `Ctrl` `+` / `-` is left to the browser's native zoom.
+
+Colour tweaks are live/session; the persistent defaults live in the config.
+
+### Sidebar
+
+Drag the sidebar's right edge to resize the menu (any width). The default width
+is `[ui] sidebar_width`.
+
+### Keyboard shortcuts
+
+Press `?` for an in-app list. Keys are ignored while typing in a field.
+
+| Key | Action |
+|-----|--------|
+| `←` / `→` | previous / next event |
+| `n` | new view |
+| `3` / `s` / `f` / `t` | camera 3D / side / front / top (selected view, else main) |
+| `g` / `h` / `v` | toggle geometry / hits / vertex |
+| `+` / `-` | all text larger / smaller |
+| `Ctrl` `+`/`-` | browser zoom (native) |
+| `?` | shortcut help |
 
 ### Assets
 

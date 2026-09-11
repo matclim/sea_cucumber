@@ -31,7 +31,7 @@ export const SCHEMES = {
   },
   ship_db: {
     label: "SHiP dark blue",
-    bg: "#081b3c", bg2: "#050f22", surface: "#12305f",
+    bg: "#050f22", bg2: "#081b3c", surface: "#12305f",
     text: "#f1debc", accent: "#e3a93c", hit: "#c64284", vertex: "#eda9c8",
     geometry: ["#5a86d0", "#6e97d6", "#8fb3e0", "#a9c4e8",
                "#e3a93c", "#e8cfa0", "#f1debc"],
