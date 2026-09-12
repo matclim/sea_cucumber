@@ -4,7 +4,7 @@
 name = "cz_conventional_commits"
 tag_format = "v$version"
 version_scheme = "semver"
-version = "0.1.0"
+version = "0.2.0"
 update_changelog_on_bump = true
 # Keep every place the version lives in sync on `cz bump`.
 version_files = [

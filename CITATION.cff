@@ -6,6 +6,6 @@ message: "The SHiP event display."
 type: software
 authors:
   - name: "SHiP Collaboration"
-version: 0.1.0
+version: 0.2.0
 license: LGPL-3.0-or-later
 repository-code: "https://github.com/ShipSoft/sea-cucumber"
