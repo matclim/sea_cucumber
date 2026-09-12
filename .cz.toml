@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: CERN for the benefit of the SHiP Collaboration
+# SPDX-License-Identifier: LGPL-3.0-or-later
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "semver"
+version = "0.1.0"
+update_changelog_on_bump = true
+# Keep every place the version lives in sync on `cz bump`.
+version_files = [
+  "VERSION",
+  "pixi.toml:^version",
+  "CITATION.cff:^version",
+]
